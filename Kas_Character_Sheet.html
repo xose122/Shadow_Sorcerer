@@ -1,0 +1,2434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kas - Warforged Shadow Sorcerer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --parchment: #f4ece1;
+            --parchment-dark: #e8dcc8;
+            --ink: #2a1f1a;
+            --ink-light: #4a3f3a;
+            --gold: #c9a227;
+            --gold-dark: #8b6914;
+            --shadow: #1a1a2e;
+            --shadow-light: #2d2d44;
+            --ruby: #8b2942;
+            --purple: #5a3d6a;
+            --border-ornate: #6b5344;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(26, 26, 46, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(90, 61, 106, 0.08) 0%, transparent 50%),
+                linear-gradient(180deg, #e8dcc8 0%, #f4ece1 50%, #e8dcc8 100%);
+            min-height: 100vh;
+            color: var(--ink);
+            padding: 20px;
+        }
+
+        /* Spell Popup Overlay */
+        .spell-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 46, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(3px);
+        }
+
+        .spell-overlay.active {
+            display: flex;
+        }
+
+        .spell-popup {
+            background: 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"),
+                var(--parchment);
+            border: 3px solid var(--purple);
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 
+                0 0 0 1px var(--shadow),
+                0 10px 40px rgba(0,0,0,0.5);
+            animation: popupIn 0.2s ease-out;
+        }
+
+        @keyframes popupIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .spell-popup-header {
+            background: linear-gradient(135deg, var(--shadow) 0%, var(--shadow-light) 100%);
+            padding: 15px 20px;
+            border-bottom: 2px solid var(--purple);
+            position: relative;
+        }
+
+        .spell-popup-header.cantrip {
+            background: linear-gradient(135deg, var(--ink-light) 0%, #5a4f4a 100%);
+        }
+
+        .spell-popup-header.subclass {
+            background: linear-gradient(135deg, var(--purple) 0%, #7a5d8a 100%);
+        }
+
+        .spell-popup-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .spell-popup-subtitle {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.8);
+            font-style: italic;
+        }
+
+        .spell-popup-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .spell-popup-close:hover {
+            opacity: 1;
+        }
+
+        .spell-popup-body {
+            padding: 20px;
+        }
+
+        .spell-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed var(--purple);
+        }
+
+        .spell-meta-item {
+            font-size: 0.9rem;
+        }
+
+        .spell-meta-label {
+            font-weight: 600;
+            color: var(--ink-light);
+        }
+
+        .spell-description {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .spell-description p {
+            margin-bottom: 10px;
+        }
+
+        .spell-description p:last-child {
+            margin-bottom: 0;
+        }
+
+        .spell-upcast {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--purple);
+            font-size: 0.9rem;
+            color: var(--ink-light);
+        }
+
+        .spell-upcast strong {
+            color: var(--purple);
+        }
+
+        /* Clickable spells */
+        .spell-link {
+            cursor: pointer;
+            border-bottom: 1px dotted var(--ink-light);
+            transition: all 0.2s;
+        }
+
+        .spell-link:hover {
+            color: var(--purple);
+            border-bottom-color: var(--purple);
+        }
+
+        /* Dice Roll Toast */
+        .dice-toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: var(--parchment);
+            border: 3px solid var(--purple);
+            border-radius: 12px;
+            padding: 25px 35px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            z-index: 2000;
+            text-align: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .dice-toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .dice-toast.crit {
+            border-color: var(--gold);
+            background: linear-gradient(135deg, rgba(201, 162, 39, 0.15) 0%, var(--parchment) 100%);
+        }
+
+        .dice-toast.fail {
+            border-color: var(--ruby);
+            background: linear-gradient(135deg, rgba(139, 41, 66, 0.15) 0%, var(--parchment) 100%);
+        }
+
+        .dice-toast-skill {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            color: var(--ink-light);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .dice-toast-result {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .dice-toast.crit .dice-toast-result {
+            color: var(--gold-dark);
+        }
+
+        .dice-toast.fail .dice-toast-result {
+            color: var(--ruby);
+        }
+
+        .dice-toast-breakdown {
+            font-size: 0.9rem;
+            color: var(--ink-light);
+            margin-top: 8px;
+        }
+
+        .dice-toast-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            color: var(--purple);
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .sheet {
+            max-width: 900px;
+            margin: 0 auto;
+            background: 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"),
+                var(--parchment);
+            border: 3px solid var(--border-ornate);
+            border-radius: 4px;
+            box-shadow: 
+                0 0 0 1px var(--shadow),
+                0 4px 20px rgba(26, 26, 46, 0.3),
+                inset 0 0 60px rgba(26, 26, 46, 0.05);
+            padding: 30px;
+            position: relative;
+        }
+
+        .sheet::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 1px solid var(--purple);
+            border-radius: 2px;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--purple);
+            position: relative;
+        }
+
+        .header::after {
+            content: '☽';
+            position: absolute;
+            bottom: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--parchment);
+            padding: 0 15px;
+            color: var(--purple);
+            font-size: 20px;
+        }
+
+        .character-name {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--ink);
+            text-shadow: 2px 2px 0 var(--parchment-dark);
+            letter-spacing: 0.15em;
+            margin-bottom: 5px;
+        }
+
+        .character-subtitle {
+            font-size: 1.2rem;
+            font-style: italic;
+            color: var(--ink-light);
+            letter-spacing: 0.05em;
+        }
+
+        /* Combat Stats Row */
+        .combat-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .combat-stat {
+            background: linear-gradient(135deg, var(--shadow) 0%, var(--shadow-light) 100%);
+            border: 2px solid var(--purple);
+            border-radius: 8px;
+            padding: 12px 8px;
+            text-align: center;
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.1),
+                0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .combat-stat-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+        }
+
+        .combat-stat-value {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .combat-stat-note {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.7);
+            font-style: italic;
+        }
+
+        .combat-stat.initiative-roll {
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .combat-stat.initiative-roll:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.2),
+                0 5px 12px rgba(0,0,0,0.3);
+        }
+
+        /* Ability Scores */
+        .abilities-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--shadow);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 12px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--purple);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before,
+        .section-title::after {
+            content: '◆';
+            font-size: 0.6rem;
+            color: var(--purple);
+        }
+
+        .abilities-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+
+        .ability-box {
+            background: var(--parchment-dark);
+            border: 2px solid var(--border-ornate);
+            border-radius: 8px;
+            padding: 10px 5px;
+            text-align: center;
+            position: relative;
+        }
+
+        .ability-box.prof {
+            border-color: var(--purple);
+            background: linear-gradient(135deg, rgba(90, 61, 106, 0.1) 0%, var(--parchment-dark) 100%);
+        }
+
+        .ability-name {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--ink-light);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .ability-score {
+            font-family: 'Cinzel', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .ability-mod {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--shadow);
+        }
+
+        .ability-separator {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-ornate), transparent);
+            margin: 8px 5px;
+        }
+
+        .ability-save {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--ink);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+            display: inline-block;
+        }
+
+        .ability-save:hover {
+            background: var(--parchment);
+            color: var(--purple);
+            transform: scale(1.1);
+        }
+
+        .ability-box.prof .ability-save {
+            color: var(--purple);
+        }
+
+        .ability-box.prof .ability-save:hover {
+            color: var(--ruby);
+        }
+
+        .ability-save.conc {
+            color: var(--gold-dark);
+        }
+
+        .ability-save-dual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .ability-save-divider {
+            color: var(--border-ornate);
+            font-weight: 300;
+        }
+
+        .ability-save-labels {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 0.6rem;
+            color: var(--ink-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 2px;
+        }
+
+        /* Skills Section */
+        .skills-section {
+            margin-bottom: 25px;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .skill-item {
+            display: flex;
+            align-items: center;
+            background: var(--parchment-dark);
+            border: 1px solid var(--border-ornate);
+            border-radius: 4px;
+            padding: 6px 8px;
+            font-size: 0.85rem;
+            min-width: 0;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .skill-item:hover {
+            background: var(--parchment);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .skill-item:active {
+            transform: translateY(0);
+        }
+
+        .skill-item.prof {
+            background: linear-gradient(135deg, rgba(90, 61, 106, 0.15) 0%, rgba(90, 61, 106, 0.05) 100%);
+            border-color: var(--purple);
+        }
+
+        .skill-ability {
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--ink-light);
+            text-transform: uppercase;
+            width: 28px;
+            flex-shrink: 0;
+        }
+
+        .skill-name {
+            flex: 1;
+            color: var(--ink);
+        }
+
+        .skill-item.prof .skill-name {
+            font-weight: 600;
+            color: var(--purple);
+        }
+
+        .skill-bonus {
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            color: var(--ink);
+            min-width: 35px;
+            text-align: right;
+        }
+
+        .skill-item.prof .skill-bonus {
+            color: var(--purple);
+        }
+
+        /* Two Column Layout */
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .info-box {
+            background: var(--parchment-dark);
+            border: 1px solid var(--border-ornate);
+            border-radius: 6px;
+            padding: 15px;
+        }
+
+        .info-box h3 {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--shadow);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed var(--purple);
+        }
+
+        .info-box ul {
+            list-style: none;
+        }
+
+        .info-box li {
+            padding: 4px 0;
+            padding-left: 18px;
+            position: relative;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .info-box li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--purple);
+        }
+
+        /* Rest Buttons */
+        .rest-box {
+            padding-bottom: 15px;
+        }
+
+        .rest-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .rest-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border: 2px solid var(--border-ornate);
+            border-radius: 8px;
+            background: var(--parchment);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .rest-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .rest-btn:active {
+            transform: translateY(0);
+        }
+
+        .rest-btn.short-rest {
+            border-color: var(--gold);
+            background: linear-gradient(135deg, rgba(201, 162, 39, 0.1) 0%, var(--parchment) 100%);
+        }
+
+        .rest-btn.short-rest:hover {
+            background: linear-gradient(135deg, rgba(201, 162, 39, 0.2) 0%, var(--parchment) 100%);
+        }
+
+        .rest-btn.long-rest {
+            border-color: var(--purple);
+            background: linear-gradient(135deg, rgba(90, 61, 106, 0.1) 0%, var(--parchment) 100%);
+        }
+
+        .rest-btn.long-rest:hover {
+            background: linear-gradient(135deg, rgba(90, 61, 106, 0.2) 0%, var(--parchment) 100%);
+        }
+
+        .rest-icon {
+            font-size: 1.5rem;
+        }
+
+        .rest-label {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .rest-desc {
+            font-size: 0.75rem;
+            color: var(--ink-light);
+            margin-left: auto;
+        }
+
+        /* Features Section */
+        .features-section {
+            margin-bottom: 25px;
+        }
+
+        .feature-category {
+            background: var(--parchment-dark);
+            border: 1px solid var(--border-ornate);
+            border-radius: 6px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .feature-category-header {
+            background: linear-gradient(135deg, var(--shadow) 0%, var(--shadow-light) 100%);
+            padding: 10px 15px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .feature-category-header.purple {
+            background: linear-gradient(135deg, var(--purple) 0%, #7a5d8a 100%);
+        }
+
+        .feature-category-header.ruby {
+            background: linear-gradient(135deg, var(--ruby) 0%, #ab4962 100%);
+        }
+
+        .feature-category-content {
+            padding: 12px 15px;
+        }
+
+        .feature-item {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .feature-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .feature-name {
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .feature-sub {
+            margin-left: 20px;
+            color: var(--ink-light);
+            font-size: 0.85rem;
+        }
+
+        /* Spellcasting Section */
+        .spellcasting-header {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .spell-stat {
+            background: linear-gradient(135deg, var(--purple) 0%, #7a5d8a 100%);
+            border: 2px solid var(--shadow);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .spell-stat-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 2px;
+        }
+
+        .spell-stat-value {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* Spell Slots */
+        .slots-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .slot-box {
+            background: var(--parchment-dark);
+            border: 1px solid var(--border-ornate);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .slot-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--ink-light);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .slot-checkboxes {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .slot-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--purple);
+        }
+
+        .slot-box.sorcery-points {
+            grid-column: span 4;
+            background: linear-gradient(135deg, rgba(90, 61, 106, 0.1) 0%, var(--parchment-dark) 100%);
+            border-color: var(--purple);
+        }
+
+        .slot-note {
+            font-size: 0.7rem;
+            color: var(--ink-light);
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        /* Spell Lists */
+        .spell-level {
+            background: var(--parchment-dark);
+            border: 1px solid var(--border-ornate);
+            border-radius: 6px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .spell-level-header {
+            background: linear-gradient(135deg, var(--shadow) 0%, var(--shadow-light) 100%);
+            padding: 8px 15px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .spell-level-content {
+            padding: 12px 15px;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .spell-tag {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            font-weight: 600;
+            vertical-align: middle;
+            margin-left: 2px;
+        }
+
+        .spell-tag.subclass {
+            background: var(--purple);
+            color: #fff;
+        }
+
+        /* Metamagic Section */
+        .metamagic-section {
+            margin-bottom: 20px;
+        }
+
+        .metamagic-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .metamagic-item {
+            background: linear-gradient(135deg, rgba(90, 61, 106, 0.1) 0%, var(--parchment-dark) 100%);
+            border: 2px solid var(--purple);
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .metamagic-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            background: linear-gradient(135deg, rgba(90, 61, 106, 0.2) 0%, var(--parchment-dark) 100%);
+        }
+
+        .metamagic-item:active {
+            transform: translateY(0);
+        }
+
+        .metamagic-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .metamagic-item.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .metamagic-name {
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            color: var(--purple);
+            margin-bottom: 4px;
+        }
+
+        .metamagic-cost {
+            font-size: 0.8rem;
+            color: var(--gold-dark);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .metamagic-desc {
+            font-size: 0.85rem;
+            color: var(--ink-light);
+            line-height: 1.4;
+        }
+
+        /* Innate Sorcery Section */
+        .innate-sorcery-section {
+            margin-bottom: 20px;
+        }
+
+        .innate-sorcery-box {
+            background: linear-gradient(135deg, rgba(90, 61, 106, 0.15) 0%, var(--parchment-dark) 100%);
+            border: 2px solid var(--purple);
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
+        }
+
+        .innate-sorcery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .innate-sorcery-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--purple);
+        }
+
+        .innate-sorcery-charges {
+            display: flex;
+            gap: 8px;
+        }
+
+        .innate-charge {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--purple);
+            border-radius: 50%;
+            background: var(--parchment);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .innate-charge.used {
+            background: var(--purple);
+        }
+
+        .innate-sorcery-content {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .innate-sorcery-activate {
+            background: linear-gradient(135deg, var(--purple) 0%, #7a5d8a 100%);
+            border: 2px solid var(--shadow);
+            border-radius: 8px;
+            padding: 12px 20px;
+            color: #fff;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .innate-sorcery-activate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(90, 61, 106, 0.4);
+        }
+
+        .innate-sorcery-activate:active {
+            transform: translateY(0);
+        }
+
+        .innate-sorcery-activate.active {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(201, 162, 39, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(201, 162, 39, 0.8); }
+        }
+
+        .innate-sorcery-deactivate {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 22px;
+            height: 22px;
+            background: var(--ruby);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+
+        .innate-sorcery-activate.active .innate-sorcery-deactivate {
+            display: flex;
+        }
+
+        .innate-sorcery-deactivate:hover {
+            transform: scale(1.1);
+            background: #a33;
+        }
+
+        .innate-sorcery-info {
+            flex: 1;
+        }
+
+        .innate-sorcery-status {
+            font-size: 0.9rem;
+            color: var(--ink-light);
+            margin-bottom: 4px;
+        }
+
+        .innate-sorcery-status.active-status {
+            color: var(--gold-dark);
+            font-weight: 600;
+        }
+
+        .innate-sorcery-dc {
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .innate-sorcery-dc .boosted {
+            color: var(--gold-dark);
+        }
+
+        /* Font of Magic Section */
+        .font-of-magic-section {
+            margin-bottom: 20px;
+        }
+
+        .font-of-magic-box {
+            background: var(--parchment-dark);
+            border: 1px solid var(--border-ornate);
+            border-radius: 6px;
+            padding: 15px;
+        }
+
+        .font-of-magic-tables {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .font-table {
+            background: var(--parchment);
+            border: 1px solid var(--purple);
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .font-table-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--purple);
+            margin-bottom: 4px;
+        }
+
+        .font-table-desc {
+            font-size: 0.75rem;
+            color: var(--ink-light);
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .conversion-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .conversion-table th {
+            background: var(--purple);
+            color: #fff;
+            padding: 6px 8px;
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .conversion-table td {
+            padding: 6px 8px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-ornate);
+        }
+
+        .conversion-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .conversion-table tr.locked {
+            opacity: 0.4;
+        }
+
+        .conversion-table tr:nth-child(even) td {
+            background: rgba(90, 61, 106, 0.05);
+        }
+
+        @media (max-width: 480px) {
+            .font-of-magic-tables {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sheet {
+                padding: 15px;
+            }
+            .character-name {
+                font-size: 2rem;
+            }
+            .combat-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .abilities-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .skills-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+            .spellcasting-header {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .slots-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .slot-box.sorcery-points {
+                grid-column: span 2;
+            }
+            .metamagic-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+            .abilities-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .sheet {
+                box-shadow: none;
+                border: 1px solid #ccc;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sheet">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="character-name">KAS</h1>
+            <p class="character-subtitle">Warforged Shadow Sorcerer 7 • Faceless</p>
+        </div>
+
+        <!-- Combat Stats -->
+        <div class="combat-row">
+            <div class="combat-stat">
+                <div class="combat-stat-label">Armor Class</div>
+                <div class="combat-stat-value">16</div>
+                <div class="combat-stat-note">Integrated Protection</div>
+            </div>
+            <div class="combat-stat">
+                <div class="combat-stat-label">Hit Points</div>
+                <div class="combat-stat-value">65</div>
+                <div class="combat-stat-note">7d6 + 21</div>
+            </div>
+            <div class="combat-stat">
+                <div class="combat-stat-label">Speed</div>
+                <div class="combat-stat-value">30 ft</div>
+                <div class="combat-stat-note">Warforged</div>
+            </div>
+            <div class="combat-stat initiative-roll" data-bonus="2">
+                <div class="combat-stat-label">Initiative</div>
+                <div class="combat-stat-value">+2</div>
+                <div class="combat-stat-note">DEX (click to roll)</div>
+            </div>
+        </div>
+
+        <!-- Ability Scores -->
+        <div class="abilities-section">
+            <h2 class="section-title">Ability Scores</h2>
+            <div class="abilities-grid">
+                <div class="ability-box">
+                    <div class="ability-name">STR</div>
+                    <div class="ability-score">12</div>
+                    <div class="ability-mod">+1</div>
+                    <div class="ability-separator"></div>
+                    <div class="ability-save" data-save="Strength" data-bonus="1">+1</div>
+                </div>
+                <div class="ability-box">
+                    <div class="ability-name">DEX</div>
+                    <div class="ability-score">14</div>
+                    <div class="ability-mod">+2</div>
+                    <div class="ability-separator"></div>
+                    <div class="ability-save" data-save="Dexterity" data-bonus="2">+2</div>
+                </div>
+                <div class="ability-box prof">
+                    <div class="ability-name">CON</div>
+                    <div class="ability-score">16</div>
+                    <div class="ability-mod">+3</div>
+                    <div class="ability-separator"></div>
+                    <div class="ability-save-dual">
+                        <div class="ability-save" data-save="Constitution" data-bonus="6">+6</div>
+                        <div class="ability-save-divider">|</div>
+                        <div class="ability-save conc" data-save="Concentration" data-bonus="11">+11</div>
+                    </div>
+                    <div class="ability-save-labels">
+                        <span>save</span><span>conc</span>
+                    </div>
+                </div>
+                <div class="ability-box">
+                    <div class="ability-name">INT</div>
+                    <div class="ability-score">10</div>
+                    <div class="ability-mod">+0</div>
+                    <div class="ability-separator"></div>
+                    <div class="ability-save" data-save="Intelligence" data-bonus="0">+0</div>
+                </div>
+                <div class="ability-box">
+                    <div class="ability-name">WIS</div>
+                    <div class="ability-score">12</div>
+                    <div class="ability-mod">+1</div>
+                    <div class="ability-separator"></div>
+                    <div class="ability-save" data-save="Wisdom" data-bonus="1">+1</div>
+                </div>
+                <div class="ability-box prof">
+                    <div class="ability-name">CHA</div>
+                    <div class="ability-score">20</div>
+                    <div class="ability-mod">+5</div>
+                    <div class="ability-separator"></div>
+                    <div class="ability-save" data-save="Charisma" data-bonus="8">+8</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills Section -->
+        <div class="skills-section">
+            <h2 class="section-title">Skills</h2>
+            <div class="skills-grid">
+                <div class="skill-item" data-skill="Acrobatics" data-bonus="2">
+                    <span class="skill-ability">DEX</span>
+                    <span class="skill-name">Acrobatics</span>
+                    <span class="skill-bonus">+2</span>
+                </div>
+                <div class="skill-item" data-skill="Animal Handling" data-bonus="1">
+                    <span class="skill-ability">WIS</span>
+                    <span class="skill-name">Animal Handling</span>
+                    <span class="skill-bonus">+1</span>
+                </div>
+                <div class="skill-item prof" data-skill="Arcana" data-bonus="3">
+                    <span class="skill-ability">INT</span>
+                    <span class="skill-name">Arcana</span>
+                    <span class="skill-bonus">+3</span>
+                </div>
+                <div class="skill-item" data-skill="Athletics" data-bonus="1">
+                    <span class="skill-ability">STR</span>
+                    <span class="skill-name">Athletics</span>
+                    <span class="skill-bonus">+1</span>
+                </div>
+                <div class="skill-item prof" data-skill="Deception" data-bonus="8">
+                    <span class="skill-ability">CHA</span>
+                    <span class="skill-name">Deception</span>
+                    <span class="skill-bonus">+8</span>
+                </div>
+                <div class="skill-item" data-skill="History" data-bonus="0">
+                    <span class="skill-ability">INT</span>
+                    <span class="skill-name">History</span>
+                    <span class="skill-bonus">+0</span>
+                </div>
+                <div class="skill-item prof" data-skill="Insight" data-bonus="4">
+                    <span class="skill-ability">WIS</span>
+                    <span class="skill-name">Insight</span>
+                    <span class="skill-bonus">+4</span>
+                </div>
+                <div class="skill-item prof" data-skill="Intimidation" data-bonus="8">
+                    <span class="skill-ability">CHA</span>
+                    <span class="skill-name">Intimidation</span>
+                    <span class="skill-bonus">+8</span>
+                </div>
+                <div class="skill-item" data-skill="Investigation" data-bonus="0">
+                    <span class="skill-ability">INT</span>
+                    <span class="skill-name">Investigation</span>
+                    <span class="skill-bonus">+0</span>
+                </div>
+                <div class="skill-item" data-skill="Medicine" data-bonus="1">
+                    <span class="skill-ability">WIS</span>
+                    <span class="skill-name">Medicine</span>
+                    <span class="skill-bonus">+1</span>
+                </div>
+                <div class="skill-item" data-skill="Nature" data-bonus="0">
+                    <span class="skill-ability">INT</span>
+                    <span class="skill-name">Nature</span>
+                    <span class="skill-bonus">+0</span>
+                </div>
+                <div class="skill-item" data-skill="Perception" data-bonus="1">
+                    <span class="skill-ability">WIS</span>
+                    <span class="skill-name">Perception</span>
+                    <span class="skill-bonus">+1</span>
+                </div>
+                <div class="skill-item" data-skill="Performance" data-bonus="5">
+                    <span class="skill-ability">CHA</span>
+                    <span class="skill-name">Performance</span>
+                    <span class="skill-bonus">+5</span>
+                </div>
+                <div class="skill-item prof" data-skill="Persuasion" data-bonus="8">
+                    <span class="skill-ability">CHA</span>
+                    <span class="skill-name">Persuasion</span>
+                    <span class="skill-bonus">+8</span>
+                </div>
+                <div class="skill-item" data-skill="Religion" data-bonus="0">
+                    <span class="skill-ability">INT</span>
+                    <span class="skill-name">Religion</span>
+                    <span class="skill-bonus">+0</span>
+                </div>
+                <div class="skill-item" data-skill="Sleight of Hand" data-bonus="2">
+                    <span class="skill-ability">DEX</span>
+                    <span class="skill-name">Sleight of Hand</span>
+                    <span class="skill-bonus">+2</span>
+                </div>
+                <div class="skill-item" data-skill="Stealth" data-bonus="2">
+                    <span class="skill-ability">DEX</span>
+                    <span class="skill-name">Stealth</span>
+                    <span class="skill-bonus">+2</span>
+                </div>
+                <div class="skill-item" data-skill="Survival" data-bonus="1">
+                    <span class="skill-ability">WIS</span>
+                    <span class="skill-name">Survival</span>
+                    <span class="skill-bonus">+1</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Proficiencies & Rest -->
+        <div class="two-columns">
+            <div class="info-box">
+                <h3>Proficiencies</h3>
+                <ul>
+                    <li><strong>Armor:</strong> None</li>
+                    <li><strong>Weapons:</strong> Daggers, Darts, Slings, Quarterstaffs, Light Crossbows</li>
+                    <li><strong>Tools:</strong> Smith's Tools, Disguise Kit</li>
+                    <li><strong>Languages:</strong> Common, +1</li>
+                </ul>
+            </div>
+            <div class="info-box rest-box">
+                <h3>Rest</h3>
+                <div class="rest-buttons">
+                    <button class="rest-btn short-rest" onclick="shortRest()">
+                        <span class="rest-icon">☀</span>
+                        <span class="rest-label">Short Rest</span>
+                        <span class="rest-desc">Regain ½ SP (3)</span>
+                    </button>
+                    <button class="rest-btn long-rest" onclick="longRest()">
+                        <span class="rest-icon">☽</span>
+                        <span class="rest-label">Long Rest</span>
+                        <span class="rest-desc">6 hours (Sentry's Rest)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="features-section">
+            <h2 class="section-title">Features & Traits</h2>
+            
+            <div class="feature-category">
+                <div class="feature-category-header">Warforged Traits</div>
+                <div class="feature-category-content">
+                    <div class="feature-item"><span class="feature-name">Construct Resilience:</span> Resistance to Poison damage. Advantage on saves to avoid or end the Poisoned condition</div>
+                    <div class="feature-item"><span class="feature-name">Integrated Protection:</span> +1 bonus to AC. Armor you wear can't be removed against your will while alive</div>
+                    <div class="feature-item"><span class="feature-name">Sentry's Rest:</span> Don't need to sleep. Long Rest in 6 hours while inactive but conscious. Magic can't put you to sleep</div>
+                    <div class="feature-item"><span class="feature-name">Tireless:</span> Don't gain Exhaustion from dehydration, malnutrition, or suffocation</div>
+                </div>
+            </div>
+
+            <div class="feature-category">
+                <div class="feature-category-header">Sorcerer Features (Level 7)</div>
+                <div class="feature-category-content">
+                    <div class="feature-item"><span class="feature-name">Innate Sorcery</span> (2/Long Rest, Bonus Action, 1 min):
+                        <div class="feature-sub">• Spell save DC +1</div>
+                        <div class="feature-sub">• Advantage on spell attack rolls</div>
+                    </div>
+                    <div class="feature-item"><span class="feature-name">Font of Magic:</span> 7 Sorcery Points. Convert slots ↔ points</div>
+                    <div class="feature-item"><span class="feature-name">Sorcerous Restoration</span> (1/Long Rest): Regain up to 3 SP on Short Rest</div>
+                    <div class="feature-item"><span class="feature-name">Sorcery Incarnate:</span> If no Innate Sorcery uses left, spend 2 SP to activate it. While active, can use 2 Metamagic options per spell</div>
+                </div>
+            </div>
+
+            <div class="feature-category">
+                <div class="feature-category-header purple">Shadow Sorcery</div>
+                <div class="feature-category-content">
+                    <div class="feature-item"><span class="feature-name">Eyes of the Dark:</span> Darkvision 120 ft, Blindsight 10 ft. See normally through Darkness spells you cast</div>
+                    <div class="feature-item"><span class="feature-name">Spirits of Ill Omen:</span> Cast Summon Undead without Material component. 1/Long Rest cast without spell slot. Can remove Concentration (duration becomes 1 min, ends if cast again)</div>
+                </div>
+            </div>
+
+            <div class="feature-category">
+                <div class="feature-category-header ruby">Background: Faceless</div>
+                <div class="feature-category-content">
+                    <div class="feature-item"><span class="feature-name">Dual Personalities:</span> You have a persona identity. While in disguise, others can't discern your true identity</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Innate Sorcery -->
+        <div class="innate-sorcery-section">
+            <h2 class="section-title">Innate Sorcery</h2>
+            <div class="innate-sorcery-box">
+                <div class="innate-sorcery-header">
+                    <span class="innate-sorcery-title">Charges</span>
+                    <div class="innate-sorcery-charges">
+                        <div class="innate-charge" id="innateCharge1" onclick="toggleInnateCharge(1)"></div>
+                        <div class="innate-charge" id="innateCharge2" onclick="toggleInnateCharge(2)"></div>
+                    </div>
+                </div>
+                <div class="innate-sorcery-content">
+                    <button class="innate-sorcery-activate" id="innateActivateBtn" onclick="toggleInnateSorcery()">
+                        Activate
+                        <span class="innate-sorcery-deactivate" onclick="event.stopPropagation(); deactivateInnateSorcery()">×</span>
+                    </button>
+                    <div class="innate-sorcery-info">
+                        <div class="innate-sorcery-status" id="innateStatus">Inactive</div>
+                        <div class="innate-sorcery-dc">
+                            Spell DC: <span id="currentDC">17</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Font of Magic -->
+        <div class="font-of-magic-section">
+            <h2 class="section-title">Font of Magic</h2>
+            <div class="font-of-magic-box">
+                <div class="font-of-magic-tables">
+                    <div class="font-table">
+                        <div class="font-table-title">Slot → Sorcery Points</div>
+                        <div class="font-table-desc">Expend a spell slot (no action)</div>
+                        <table class="conversion-table">
+                            <tr><th>Slot</th><th>SP Gained</th></tr>
+                            <tr><td>1st</td><td>1</td></tr>
+                            <tr><td>2nd</td><td>2</td></tr>
+                            <tr><td>3rd</td><td>3</td></tr>
+                            <tr><td>4th</td><td>4</td></tr>
+                        </table>
+                    </div>
+                    <div class="font-table">
+                        <div class="font-table-title">Sorcery Points → Slot</div>
+                        <div class="font-table-desc">Bonus Action (max level 5)</div>
+                        <table class="conversion-table">
+                            <tr><th>Slot</th><th>SP Cost</th><th>Min Lvl</th></tr>
+                            <tr><td>1st</td><td>2</td><td>2</td></tr>
+                            <tr><td>2nd</td><td>3</td><td>3</td></tr>
+                            <tr><td>3rd</td><td>5</td><td>5</td></tr>
+                            <tr><td>4th</td><td>6</td><td>7</td></tr>
+                            <tr><td>5th</td><td>7</td><td>9</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metamagic -->
+        <div class="metamagic-section">
+            <h2 class="section-title">Metamagic</h2>
+            <div class="metamagic-grid">
+                <div class="metamagic-item" id="metamagicQuickened" onclick="useMetamagic('Quickened Spell', 2)">
+                    <div class="metamagic-name">Quickened Spell</div>
+                    <div class="metamagic-cost">2 Sorcery Points</div>
+                    <div class="metamagic-desc">Change casting time of 1 Action to 1 Bonus Action</div>
+                </div>
+                <div class="metamagic-item" id="metamagicHeightened" onclick="useMetamagic('Heightened Spell', 2)">
+                    <div class="metamagic-name">Heightened Spell</div>
+                    <div class="metamagic-cost">2 Sorcery Points</div>
+                    <div class="metamagic-desc">One target of the spell has Disadvantage on its first save against the spell</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spellcasting -->
+        <div class="spellcasting-section">
+            <h2 class="section-title">Spellcasting</h2>
+            
+            <div class="spellcasting-header">
+                <div class="spell-stat">
+                    <div class="spell-stat-label">Spell Save DC</div>
+                    <div class="spell-stat-value">17</div>
+                </div>
+                <div class="spell-stat">
+                    <div class="spell-stat-label">Spell Attack</div>
+                    <div class="spell-stat-value">+9</div>
+                </div>
+                <div class="spell-stat">
+                    <div class="spell-stat-label">Ability</div>
+                    <div class="spell-stat-value">CHA</div>
+                </div>
+                <div class="spell-stat">
+                    <div class="spell-stat-label">Focus</div>
+                    <div class="spell-stat-value">Arcane</div>
+                </div>
+            </div>
+
+            <!-- Spell Slots & Sorcery Points -->
+            <div class="slots-section">
+                <div class="slot-box">
+                    <div class="slot-label">1st Level</div>
+                    <div class="slot-checkboxes">
+                        <input type="checkbox" class="slot-checkbox">
+                        <input type="checkbox" class="slot-checkbox">
+                        <input type="checkbox" class="slot-checkbox">
+                        <input type="checkbox" class="slot-checkbox">
+                    </div>
+                </div>
+                <div class="slot-box">
+                    <div class="slot-label">2nd Level</div>
+                    <div class="slot-checkboxes">
+                        <input type="checkbox" class="slot-checkbox">
+                        <input type="checkbox" class="slot-checkbox">
+                        <input type="checkbox" class="slot-checkbox">
+                    </div>
+                </div>
+                <div class="slot-box">
+                    <div class="slot-label">3rd Level</div>
+                    <div class="slot-checkboxes">
+                        <input type="checkbox" class="slot-checkbox">
+                        <input type="checkbox" class="slot-checkbox">
+                        <input type="checkbox" class="slot-checkbox">
+                    </div>
+                </div>
+                <div class="slot-box">
+                    <div class="slot-label">4th Level</div>
+                    <div class="slot-checkboxes">
+                        <input type="checkbox" class="slot-checkbox">
+                    </div>
+                </div>
+                <div class="slot-box sorcery-points">
+                    <div class="slot-label">Sorcery Points</div>
+                    <div class="slot-checkboxes" id="sorceryPointsContainer">
+                        <input type="checkbox" class="slot-checkbox sorcery-point">
+                        <input type="checkbox" class="slot-checkbox sorcery-point">
+                        <input type="checkbox" class="slot-checkbox sorcery-point">
+                        <input type="checkbox" class="slot-checkbox sorcery-point">
+                        <input type="checkbox" class="slot-checkbox sorcery-point">
+                        <input type="checkbox" class="slot-checkbox sorcery-point">
+                        <input type="checkbox" class="slot-checkbox sorcery-point">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spell Lists -->
+            <div class="spell-level">
+                <div class="spell-level-header">Cantrips</div>
+                <div class="spell-level-content">
+                    <span class="spell-link" data-spell="acid-splash">Acid Splash</span>, 
+                    <span class="spell-link" data-spell="chill-touch">Chill Touch</span>, 
+                    <span class="spell-link" data-spell="mending">Mending</span>, 
+                    <span class="spell-link" data-spell="mind-sliver">Mind Sliver</span>, 
+                    <span class="spell-link" data-spell="prestidigitation">Prestidigitation</span>
+                </div>
+            </div>
+
+            <div class="spell-level">
+                <div class="spell-level-header">1st Level</div>
+                <div class="spell-level-content">
+                    <span class="spell-link" data-spell="bane">Bane</span> <span class="spell-tag subclass">Shadow</span>, 
+                    <span class="spell-link" data-spell="inflict-wounds">Inflict Wounds</span> <span class="spell-tag subclass">Shadow</span>, 
+                    <span class="spell-link" data-spell="chromatic-orb">Chromatic Orb</span>, 
+                    <span class="spell-link" data-spell="shield">Shield</span>
+                </div>
+            </div>
+
+            <div class="spell-level">
+                <div class="spell-level-header">2nd Level</div>
+                <div class="spell-level-content">
+                    <span class="spell-link" data-spell="darkness">Darkness</span> <span class="spell-tag subclass">Shadow</span>, 
+                    <span class="spell-link" data-spell="pass-without-trace">Pass Without Trace</span> <span class="spell-tag subclass">Shadow</span>, 
+                    <span class="spell-link" data-spell="detect-thoughts">Detect Thoughts</span>, 
+                    <span class="spell-link" data-spell="mirror-image">Mirror Image</span>, 
+                    <span class="spell-link" data-spell="misty-step">Misty Step</span>, 
+                    <span class="spell-link" data-spell="invisibility">Invisibility</span>
+                </div>
+            </div>
+
+            <div class="spell-level">
+                <div class="spell-level-header">3rd Level</div>
+                <div class="spell-level-content">
+                    <span class="spell-link" data-spell="hunger-of-hadar">Hunger of Hadar</span> <span class="spell-tag subclass">Shadow</span>, 
+                    <span class="spell-link" data-spell="summon-undead">Summon Undead</span> <span class="spell-tag subclass">Shadow</span>, 
+                    <span class="spell-link" data-spell="counterspell">Counterspell</span>, 
+                    <span class="spell-link" data-spell="dispel-magic">Dispel Magic</span>, 
+                    <span class="spell-link" data-spell="fireball">Fireball</span>, 
+                    <span class="spell-link" data-spell="fear">Fear</span>, 
+                    <span class="spell-link" data-spell="major-image">Major Image</span>
+                </div>
+            </div>
+
+            <div class="spell-level">
+                <div class="spell-level-header">4th Level</div>
+                <div class="spell-level-content">
+                    <span class="spell-link" data-spell="greater-invisibility">Greater Invisibility</span> <span class="spell-tag subclass">Shadow</span>, 
+                    <span class="spell-link" data-spell="phantasmal-killer">Phantasmal Killer</span> <span class="spell-tag subclass">Shadow</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spell Popup -->
+    <div class="spell-overlay" id="spellOverlay">
+        <div class="spell-popup">
+            <div class="spell-popup-header" id="spellHeader">
+                <h3 class="spell-popup-title" id="spellTitle"></h3>
+                <p class="spell-popup-subtitle" id="spellSubtitle"></p>
+                <button class="spell-popup-close" onclick="closeSpellPopup()">×</button>
+            </div>
+            <div class="spell-popup-body">
+                <div class="spell-meta" id="spellMeta"></div>
+                <div class="spell-description" id="spellDescription"></div>
+                <div class="spell-upcast" id="spellUpcast"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dice Toast -->
+    <div class="dice-toast" id="diceToast">
+        <div class="dice-toast-skill" id="diceSkill"></div>
+        <div class="dice-toast-result" id="diceResult"></div>
+        <div class="dice-toast-breakdown" id="diceBreakdown"></div>
+        <div class="dice-toast-label" id="diceLabel"></div>
+    </div>
+
+    <script>
+        // LocalStorage functions
+        const STORAGE_KEY = 'kas_character_sheet';
+
+        function saveState() {
+            const state = {
+                spellSlots: [],
+                sorceryPoints: [],
+                innateCharges: [
+                    document.getElementById('innateCharge1').classList.contains('used'),
+                    document.getElementById('innateCharge2').classList.contains('used')
+                ],
+                innateSorceryActive: innateSorceryActive
+            };
+
+            // Save spell slot checkboxes
+            document.querySelectorAll('.slot-checkbox:not(.sorcery-point)').forEach(cb => {
+                state.spellSlots.push(cb.checked);
+            });
+
+            // Save sorcery points
+            document.querySelectorAll('.sorcery-point').forEach(cb => {
+                state.sorceryPoints.push(cb.checked);
+            });
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) return;
+
+            try {
+                const state = JSON.parse(saved);
+
+                // Restore spell slots
+                const spellSlots = document.querySelectorAll('.slot-checkbox:not(.sorcery-point)');
+                state.spellSlots.forEach((checked, i) => {
+                    if (spellSlots[i]) spellSlots[i].checked = checked;
+                });
+
+                // Restore sorcery points
+                const sorceryPoints = document.querySelectorAll('.sorcery-point');
+                state.sorceryPoints.forEach((checked, i) => {
+                    if (sorceryPoints[i]) sorceryPoints[i].checked = checked;
+                });
+
+                // Restore innate charges
+                if (state.innateCharges[0]) {
+                    document.getElementById('innateCharge1').classList.add('used');
+                }
+                if (state.innateCharges[1]) {
+                    document.getElementById('innateCharge2').classList.add('used');
+                }
+
+                // Restore innate sorcery active state
+                if (state.innateSorceryActive) {
+                    activateInnateSorcery();
+                }
+            } catch (e) {
+                console.error('Error loading saved state:', e);
+            }
+        }
+
+        // Auto-save on any change
+        function setupAutoSave() {
+            // Save when checkboxes change
+            document.querySelectorAll('.slot-checkbox').forEach(cb => {
+                cb.addEventListener('change', saveState);
+            });
+
+            // Save when innate charges are clicked
+            document.getElementById('innateCharge1').addEventListener('click', () => setTimeout(saveState, 50));
+            document.getElementById('innateCharge2').addEventListener('click', () => setTimeout(saveState, 50));
+        }
+
+        // Load state when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            setupAutoSave();
+        });
+
+        // Spell Database
+        const spells = {
+            // Cantrips
+            "acid-splash": {
+                name: "Acid Splash",
+                level: "Cantrip",
+                school: "Evocation",
+                type: "cantrip",
+                castingTime: "Action",
+                range: "60 feet",
+                components: "V, S",
+                duration: "Instantaneous",
+                description: `<p>You create an acidic bubble at a point within range, where it explodes in a 5-foot-radius Sphere. Each creature in that Sphere must succeed on a Dexterity saving throw or take 1d6 Acid damage.</p>`,
+                upcast: "The damage increases by 1d6 when you reach levels 5 (2d6), 11 (3d6), and 17 (4d6)."
+            },
+            "chill-touch": {
+                name: "Chill Touch",
+                level: "Cantrip",
+                school: "Necromancy",
+                type: "cantrip",
+                castingTime: "Action",
+                range: "Touch",
+                components: "V, S",
+                duration: "Instantaneous",
+                description: `<p>You touch one creature, and Negative Energy washes over it. The target must succeed on a Constitution saving throw or take 1d10 Necrotic damage. Until the end of your next turn, the target can't regain Hit Points.</p>`,
+                upcast: "The damage increases by 1d10 when you reach levels 5 (2d10), 11 (3d10), and 17 (4d10)."
+            },
+            "mending": {
+                name: "Mending",
+                level: "Cantrip",
+                school: "Transmutation",
+                type: "cantrip",
+                castingTime: "1 minute",
+                range: "Touch",
+                components: "V, S, M (two lodestones)",
+                duration: "Instantaneous",
+                description: `<p>This spell repairs a single break or tear in an object you touch, such as a broken chain link, two halves of a broken key, a torn cloak, or a leaking wineskin. As long as the break or tear is no larger than 1 foot in any dimension, you mend it, leaving no trace of the former damage.</p><p>This spell can physically repair a magic item, but it can't restore magic to such an object.</p>`
+            },
+            "mind-sliver": {
+                name: "Mind Sliver",
+                level: "Cantrip",
+                school: "Enchantment",
+                type: "cantrip",
+                castingTime: "Action",
+                range: "60 feet",
+                components: "V",
+                duration: "Instantaneous",
+                description: `<p>You drive a disorienting spike of psychic energy into the mind of one creature you can see within range. The target must succeed on an Intelligence saving throw or take 1d6 Psychic damage and subtract 1d4 from the next saving throw it makes before the end of your next turn.</p>`,
+                upcast: "The damage increases by 1d6 when you reach levels 5 (2d6), 11 (3d6), and 17 (4d6)."
+            },
+            "prestidigitation": {
+                name: "Prestidigitation",
+                level: "Cantrip",
+                school: "Transmutation",
+                type: "cantrip",
+                castingTime: "Action",
+                range: "10 feet",
+                components: "V, S",
+                duration: "Up to 1 hour",
+                description: `<p>This spell is a minor magical trick that novice spellcasters use for practice. You create one of the following magical effects within range:</p>
+                <p>• You create an instantaneous, harmless sensory effect, such as a shower of sparks, a puff of wind, faint musical notes, or an odd odor.</p>
+                <p>• You instantaneously light or snuff out a candle, a torch, or a small campfire.</p>
+                <p>• You instantaneously clean or soil an object no larger than 1 cubic foot.</p>
+                <p>• You chill, warm, or flavor up to 1 cubic foot of nonliving material for 1 hour.</p>
+                <p>• You make a color, a small mark, or a symbol appear on an object or a surface for 1 hour.</p>
+                <p>• You create a nonmagical trinket or an illusory image that can fit in your hand and that lasts until the end of your next turn.</p>
+                <p>If you cast this spell multiple times, you can have up to three of its non-instantaneous effects active at a time, and you can dismiss such an effect as an action.</p>`
+            },
+            // 1st Level
+            "bane": {
+                name: "Bane",
+                level: "1st",
+                school: "Enchantment",
+                type: "subclass",
+                castingTime: "Action",
+                range: "30 feet",
+                components: "V, S, M (a drop of blood)",
+                duration: "Concentration, up to 1 minute",
+                description: `<p>Up to three creatures of your choice that you can see within range must make Charisma saving throws. Whenever a target that fails this saving throw makes an attack roll or a saving throw before the spell ends, the target must roll a d4 and subtract the number rolled from the attack roll or saving throw.</p>`,
+                upcast: "When you cast this spell using a spell slot of 2nd level or higher, you can target one additional creature for each slot level above 1st."
+            },
+            "inflict-wounds": {
+                name: "Inflict Wounds",
+                level: "1st",
+                school: "Necromancy",
+                type: "subclass",
+                castingTime: "Action",
+                range: "Touch",
+                components: "V, S",
+                duration: "Instantaneous",
+                description: `<p>A creature you touch makes a Constitution saving throw, taking 2d10 Necrotic damage on a failed save or half as much damage on a successful one.</p>`,
+                upcast: "The damage increases by 1d10 for each spell slot level above 1."
+            },
+            "chromatic-orb": {
+                name: "Chromatic Orb",
+                level: "1st",
+                school: "Evocation",
+                type: "normal",
+                castingTime: "Action",
+                range: "90 feet",
+                components: "V, S, M (a diamond worth at least 50 GP)",
+                duration: "Instantaneous",
+                description: `<p>You hurl an orb of energy at a creature you can see within range. Choose Acid, Cold, Fire, Lightning, Poison, or Thunder for the type of orb you create. Make a ranged spell attack against the target. On a hit, the target takes 3d8 damage of the type you chose.</p><p>If you roll the same number on two or more of the d8s, the orb leaps to a different target of your choice within 30 feet of the target. Make an attack roll against the new target, and make a new damage roll. The orb can't leap again unless you cast the spell with a higher-level spell slot.</p>`,
+                upcast: "The damage increases by 1d8 for each spell slot level above 1, and the orb can leap a maximum number of times equal to the spell slot level."
+            },
+            "shield": {
+                name: "Shield",
+                level: "1st",
+                school: "Abjuration",
+                type: "normal",
+                castingTime: "Reaction, which you take when you are hit by an attack or targeted by Magic Missile",
+                range: "Self",
+                components: "V, S",
+                duration: "1 round",
+                description: `<p>An invisible barrier of magical force appears and protects you. Until the start of your next turn, you have a +5 bonus to AC, including against the triggering attack, and you take no damage from Magic Missile.</p>`
+            },
+            // 2nd Level
+            "darkness": {
+                name: "Darkness",
+                level: "2nd",
+                school: "Evocation",
+                type: "subclass",
+                castingTime: "Action",
+                range: "60 feet",
+                components: "V, M (bat fur and a piece of coal)",
+                duration: "Concentration, up to 10 minutes",
+                description: `<p>Magical Darkness spreads from a point you choose within range to fill a 15-foot-radius Sphere for the duration. Darkvision can't see through this Darkness. Nonmagical light can't illuminate it. Completely covering the source of the Darkness with an opaque object blocks the Darkness.</p><p>If any of this spell's area overlaps with an area of Light created by a spell of level 2 or lower, the spell that created that Light ends.</p><p><em>Eyes of the Dark: You can see normally through Darkness you create with this spell.</em></p>`
+            },
+            "pass-without-trace": {
+                name: "Pass Without Trace",
+                level: "2nd",
+                school: "Abjuration",
+                type: "subclass",
+                castingTime: "Action",
+                range: "Self (30-foot emanation)",
+                components: "V, S, M (ashes from a burnt leaf of mistletoe)",
+                duration: "Concentration, up to 1 hour",
+                description: `<p>You and creatures of your choice in the Emanation have a +10 bonus to Dexterity (Stealth) checks and leave no tracks.</p>`
+            },
+            "detect-thoughts": {
+                name: "Detect Thoughts",
+                level: "2nd",
+                school: "Divination",
+                type: "normal",
+                castingTime: "Action",
+                range: "Self",
+                components: "V, S, M (1 Copper Piece)",
+                duration: "Concentration, up to 1 minute",
+                description: `<p>You can read the thoughts of certain creatures. When you cast the spell and as a Magic action on each turn until the spell ends, you can focus your mind on any one creature that you can see within 30 feet of you. If the creature has an Intelligence of 3 or lower or doesn't speak any language, the creature is unaffected.</p><p>You initially learn the surface thoughts of the creature—what is most on its mind. As a Magic action, you can either shift your attention to another creature or attempt to probe deeper. If you probe deeper, the target must make a Wisdom save. If it fails, you learn its reasoning (if any), emotional state, and something that looms large in its mind. If it succeeds, the spell ends. Either way, the target knows that you are probing its mind, and unless you shift your attention to another creature, the target can make a Wisdom save; on a success, the spell ends.</p><p>Questions verbally directed at the target creature naturally shape its thoughts, so this spell is particularly effective as part of an interrogation.</p><p>You can also use this spell to detect the presence of thinking creatures you can't see. When you cast the spell or as a Magic action during the duration, you can search for thoughts within 30 feet of you. The spell can penetrate barriers, but 2 feet of rock, 2 inches of any metal other than lead, or a thin sheet of lead blocks you. You can't detect a creature with an Intelligence of 3 or lower or one that doesn't speak any language.</p><p>Once you detect the presence of a creature in this way, you can read its thoughts for the rest of the duration as described above, even if you can't see it, but it must still be within range.</p>`
+            },
+            "mirror-image": {
+                name: "Mirror Image",
+                level: "2nd",
+                school: "Illusion",
+                type: "normal",
+                castingTime: "Action",
+                range: "Self",
+                components: "V, S",
+                duration: "1 minute",
+                description: `<p>Three illusory duplicates of yourself appear in your space. Until the spell ends, the duplicates move with you and mimic your actions, shifting position so it's impossible to track which image is real.</p><p>Each time a creature hits you with an attack roll during the spell's duration, roll a d6 for each of your remaining duplicates. If any of the d6s rolls a 3 or higher, one of the duplicates is hit instead of you, and the duplicate is destroyed. The duplicates otherwise ignore all other damage and effects. The spell ends when all three duplicates are destroyed.</p><p>A creature is unaffected by this spell if it has the Blinded condition, Blindsight, or Truesight.</p>`
+            },
+            "misty-step": {
+                name: "Misty Step",
+                level: "2nd",
+                school: "Conjuration",
+                type: "normal",
+                castingTime: "Bonus Action",
+                range: "Self",
+                components: "V",
+                duration: "Instantaneous",
+                description: `<p>Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space you can see.</p>`
+            },
+            "invisibility": {
+                name: "Invisibility",
+                level: "2nd",
+                school: "Illusion",
+                type: "normal",
+                castingTime: "Action",
+                range: "Touch",
+                components: "V, S, M (an eyelash in gum arabic)",
+                duration: "Concentration, up to 1 hour",
+                description: `<p>A creature you touch has the Invisible condition until the spell ends. The spell ends early immediately after the target makes an attack roll, deals damage, or casts a spell.</p>`,
+                upcast: "You can target one additional creature for each spell slot level above 2."
+            },
+            // 3rd Level
+            "hunger-of-hadar": {
+                name: "Hunger of Hadar",
+                level: "3rd",
+                school: "Conjuration",
+                type: "subclass",
+                castingTime: "Action",
+                range: "150 feet",
+                components: "V, S, M (a pickled tentacle)",
+                duration: "Concentration, up to 1 minute",
+                description: `<p>You open a gateway to the Far Realm, a region infested with unspeakable horrors. A 20-foot-radius Sphere of Darkness appears, centered on a point you choose within range. The Sphere lasts for the duration. The Sphere is Difficult Terrain, and it is filled with a cacophony of whispers and slurping noises, which create the area a Heavily Obscured area. No light, magical or otherwise, can illuminate it, and creatures fully inside it have the Blinded condition.</p><p>Any creature that starts its turn in the area takes 2d6 Cold damage. Any creature that ends its turn there must succeed on a Dexterity saving throw or take 2d6 Acid damage from the otherworldly tentacles.</p>`
+            },
+            "summon-undead": {
+                name: "Summon Undead",
+                level: "3rd",
+                school: "Necromancy",
+                type: "subclass",
+                castingTime: "Action",
+                range: "90 feet",
+                components: "V, S, M (a gilded skull worth 300+ GP)",
+                duration: "Concentration, up to 1 hour",
+                description: `<p>You call forth an Undead spirit. It manifests in an unoccupied space that you can see within range and uses the Undead Spirit stat block. When you cast the spell, choose the creature's form: Ghostly, Putrid, or Skeletal. The spirit resembles an Undead creature of the chosen form. The creature disappears when it drops to 0 Hit Points or when the spell ends.</p><p>The creature is an ally to you and your allies. In combat, the creature shares your Initiative count, but takes its turn immediately after yours. It obeys your verbal commands (no action required). If you don't issue any, it takes the Dodge action and uses its movement to avoid danger.</p>
+                <p><em>Spirits of Ill Omen: You can cast this without a Material component. 1/Long Rest, you can cast it without a spell slot. You can remove Concentration (duration becomes 1 minute, ends if cast again).</em></p>
+                <hr style="border: none; border-top: 1px dashed #5a3d6a; margin: 15px 0;">
+                <p><strong style="font-size: 1.1em;">Undead Spirit</strong><br><em>Medium Undead</em></p>
+                <p><strong>AC:</strong> 11 + spell level (natural armor)<br>
+                <strong>HP:</strong> 30 (Ghostly/Putrid) or 20 (Skeletal) + 10 per level above 3rd<br>
+                <strong>Speed:</strong> 30 ft., fly 40 ft. hover (Ghostly only)</p>
+                <table style="width:100%; text-align:center; margin: 10px 0; font-size: 0.85em;">
+                <tr><td><strong>STR</strong></td><td><strong>DEX</strong></td><td><strong>CON</strong></td><td><strong>INT</strong></td><td><strong>WIS</strong></td><td><strong>CHA</strong></td></tr>
+                <tr><td>12 (+1)</td><td>16 (+3)</td><td>15 (+2)</td><td>4 (−3)</td><td>10 (+0)</td><td>9 (−1)</td></tr>
+                </table>
+                <p><strong>Damage Immunities:</strong> Necrotic, Poison<br>
+                <strong>Condition Immunities:</strong> Exhaustion, Frightened, Paralyzed, Poisoned<br>
+                <strong>Senses:</strong> Darkvision 60 ft., Passive Perception 10<br>
+                <strong>Languages:</strong> Understands your languages<br>
+                <strong>Proficiency Bonus:</strong> Equals yours</p>
+                <p><strong>Festering Aura (Putrid Only).</strong> Any creature, other than you, that starts its turn within 5 feet must succeed on a CON save vs your spell DC or be Poisoned until the start of its next turn.</p>
+                <p><strong>Incorporeal Passage (Ghostly Only).</strong> The spirit can move through creatures and objects as difficult terrain. If it ends its turn inside an object, it is shunted to the nearest unoccupied space and takes 1d10 Force damage per 5 feet traveled.</p>
+                <p><strong><em>Actions</em></strong></p>
+                <p><strong>Multiattack.</strong> The spirit makes a number of attacks equal to half the spell's level (rounded down).</p>
+                <p><strong>Deathly Touch (Ghostly Only).</strong> <em>Melee:</em> your spell attack mod to hit, reach 5 ft. <em>Hit:</em> 1d8 + 3 + spell level Necrotic, and target must WIS save or be Frightened until end of its next turn.</p>
+                <p><strong>Grave Bolt (Skeletal Only).</strong> <em>Ranged:</em> your spell attack mod to hit, range 150 ft. <em>Hit:</em> 2d4 + 3 + spell level Necrotic.</p>
+                <p><strong>Rotting Claw (Putrid Only).</strong> <em>Melee:</em> your spell attack mod to hit, reach 5 ft. <em>Hit:</em> 1d6 + 3 + spell level Slashing. If target is Poisoned, CON save or Paralyzed until end of its next turn.</p>`,
+                upcast: "Use the higher level wherever the spell's level appears in the stat block."
+            },
+            "counterspell": {
+                name: "Counterspell",
+                level: "3rd",
+                school: "Abjuration",
+                type: "normal",
+                castingTime: "Reaction, which you take when you see a creature within 60 feet casting a spell with Verbal, Somatic, or Material components",
+                range: "60 feet",
+                components: "S",
+                duration: "Instantaneous",
+                description: `<p>You attempt to interrupt a creature in the process of casting a spell. The creature makes a Constitution saving throw. On a failed save, the spell dissipates with no effect, and the action, Bonus Action, or Reaction used to cast it is wasted. If that spell was cast with a spell slot, the slot isn't expended.</p>`
+            },
+            "dispel-magic": {
+                name: "Dispel Magic",
+                level: "3rd",
+                school: "Abjuration",
+                type: "normal",
+                castingTime: "Action",
+                range: "120 feet",
+                components: "V, S",
+                duration: "Instantaneous",
+                description: `<p>Choose one creature, object, or magical effect within range. Any ongoing spell of level 3 or lower on the target ends. For each ongoing spell of level 4 or higher, make an ability check using your spellcasting ability (DC 10 plus that spell's level). On a successful check, the spell ends.</p>`,
+                upcast: "You automatically end a spell on the target if the spell's level is equal to or less than the level of the spell slot you used."
+            },
+            "fireball": {
+                name: "Fireball",
+                level: "3rd",
+                school: "Evocation",
+                type: "normal",
+                castingTime: "Action",
+                range: "150 feet",
+                components: "V, S, M (a ball of bat guano and sulfur)",
+                duration: "Instantaneous",
+                description: `<p>A bright streak flashes from you to a point you choose within range and then blossoms with a low roar into a fiery explosion. Each creature in a 20-foot-radius Sphere centered on that point makes a Dexterity saving throw, taking 8d6 Fire damage on a failed save or half as much damage on a successful one.</p><p>Flammable objects in the area that aren't being worn or carried start burning.</p>`,
+                upcast: "The damage increases by 1d6 for each spell slot level above 3."
+            },
+            "fear": {
+                name: "Fear",
+                level: "3rd",
+                school: "Illusion",
+                type: "normal",
+                castingTime: "Action",
+                range: "Self (30-foot cone)",
+                components: "V, S, M (a white feather)",
+                duration: "Concentration, up to 1 minute",
+                description: `<p>Each creature in a 30-foot Cone must succeed on a Wisdom saving throw or drop whatever it is holding and have the Frightened condition for the duration.</p><p>A Frightened creature takes the Dash action and moves away from you by the safest route on each of its turns unless there is nowhere to move. If the creature ends its turn in a location where it doesn't have line of sight to you, the creature makes a Wisdom saving throw. On a successful save, the spell ends on that creature.</p>`
+            },
+            "major-image": {
+                name: "Major Image",
+                level: "3rd",
+                school: "Illusion",
+                type: "normal",
+                castingTime: "Action",
+                range: "120 feet",
+                components: "V, S, M (a bit of fleece)",
+                duration: "Concentration, up to 10 minutes",
+                description: `<p>You create the image of an object, a creature, or some other visible phenomenon that is no larger than a 20-foot Cube. The image appears at a spot that you can see within range and lasts for the duration. It seems real, including sounds, smells, and temperature appropriate to the thing depicted, but it can't deal damage or cause conditions.</p><p>If you are within range of the illusion, you can take a Magic action to cause the image to move to any other spot within range. As the image changes location, you can alter its appearance so that its movements appear natural for the image. For example, if you create an image of a creature and move it, you can alter the image so that it appears to be walking. Similarly, you can cause the illusion to make different sounds at different times, even making it carry on a conversation, for example.</p><p>Physical interaction with the image reveals it to be an illusion, for things can pass through it. A creature that takes a Study action to examine the image can determine that it is an illusion with a successful Intelligence (Investigation) check against your spell save DC. If a creature discerns the illusion for what it is, the creature can see through the image, and its other sensory qualities become faint to the creature.</p>`,
+                upcast: "The spell lasts until dispelled, without requiring Concentration, if cast with a level 4+ spell slot."
+            },
+            // 4th Level
+            "greater-invisibility": {
+                name: "Greater Invisibility",
+                level: "4th",
+                school: "Illusion",
+                type: "subclass",
+                castingTime: "Action",
+                range: "Touch",
+                components: "V, S",
+                duration: "Concentration, up to 1 minute",
+                description: `<p>A creature you touch has the Invisible condition until the spell ends.</p>`
+            },
+            "phantasmal-killer": {
+                name: "Phantasmal Killer",
+                level: "4th",
+                school: "Illusion",
+                type: "subclass",
+                castingTime: "Action",
+                range: "120 feet",
+                components: "V, S",
+                duration: "Concentration, up to 1 minute",
+                description: `<p>You tap into the nightmares of a creature you can see within range and create an illusion of its deepest fears, visible only to that creature. The target makes a Wisdom saving throw. On a failed save, the target takes 4d10 Psychic damage and has Disadvantage on ability checks and attack rolls for the duration. On a successful save, the target takes half as much damage, and the spell ends.</p><p>For the duration, the target makes a Wisdom saving throw at the end of each of its turns. On a failed save, it takes the Psychic damage again. On a successful save, the spell ends.</p>`,
+                upcast: "The damage increases by 1d10 for each spell slot level above 4."
+            }
+        };
+
+        function openSpellPopup(spellId) {
+            const spell = spells[spellId];
+            if (!spell) return;
+
+            const overlay = document.getElementById('spellOverlay');
+            const header = document.getElementById('spellHeader');
+            const title = document.getElementById('spellTitle');
+            const subtitle = document.getElementById('spellSubtitle');
+            const meta = document.getElementById('spellMeta');
+            const description = document.getElementById('spellDescription');
+            const upcast = document.getElementById('spellUpcast');
+
+            header.className = 'spell-popup-header ' + (spell.type || '');
+
+            title.textContent = spell.name;
+            subtitle.textContent = spell.level === 'Cantrip' 
+                ? `${spell.school} Cantrip` 
+                : `Level ${spell.level} ${spell.school}`;
+
+            meta.innerHTML = `
+                <div class="spell-meta-item"><span class="spell-meta-label">Casting Time:</span> ${spell.castingTime}</div>
+                <div class="spell-meta-item"><span class="spell-meta-label">Range:</span> ${spell.range}</div>
+                <div class="spell-meta-item"><span class="spell-meta-label">Components:</span> ${spell.components}</div>
+                <div class="spell-meta-item"><span class="spell-meta-label">Duration:</span> ${spell.duration}</div>
+            `;
+
+            description.innerHTML = spell.description;
+
+            if (spell.upcast) {
+                upcast.innerHTML = `<strong>Using a Higher-Level Spell Slot:</strong> ${spell.upcast}`;
+                upcast.style.display = 'block';
+            } else {
+                upcast.style.display = 'none';
+            }
+
+            overlay.classList.add('active');
+        }
+
+        function closeSpellPopup() {
+            document.getElementById('spellOverlay').classList.remove('active');
+        }
+
+        document.getElementById('spellOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSpellPopup();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSpellPopup();
+            }
+        });
+
+        document.querySelectorAll('.spell-link').forEach(link => {
+            link.addEventListener('click', function() {
+                openSpellPopup(this.dataset.spell);
+            });
+        });
+
+        // Dice rolling functionality
+        let diceToastTimeout = null;
+
+        function rollD20() {
+            return Math.floor(Math.random() * 20) + 1;
+        }
+
+        function hideDiceToast() {
+            const toast = document.getElementById('diceToast');
+            toast.classList.remove('show');
+            if (diceToastTimeout) {
+                clearTimeout(diceToastTimeout);
+                diceToastTimeout = null;
+            }
+        }
+
+        function showDiceRoll(skillName, bonus) {
+            const roll = rollD20();
+            const total = roll + bonus;
+            const toast = document.getElementById('diceToast');
+            const skillEl = document.getElementById('diceSkill');
+            const resultEl = document.getElementById('diceResult');
+            const breakdownEl = document.getElementById('diceBreakdown');
+            const labelEl = document.getElementById('diceLabel');
+
+            skillEl.textContent = skillName;
+            resultEl.textContent = total;
+            breakdownEl.textContent = `🎲 ${roll} ${bonus >= 0 ? '+' : ''}${bonus}`;
+
+            toast.classList.remove('crit', 'fail');
+
+            if (roll === 20) {
+                toast.classList.add('crit');
+                labelEl.textContent = '¡Natural 20!';
+            } else if (roll === 1) {
+                toast.classList.add('fail');
+                labelEl.textContent = 'Natural 1...';
+            } else {
+                labelEl.textContent = '';
+            }
+
+            if (diceToastTimeout) {
+                clearTimeout(diceToastTimeout);
+            }
+
+            toast.classList.add('show');
+
+            diceToastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        document.addEventListener('click', function(e) {
+            const toast = document.getElementById('diceToast');
+            if (toast.classList.contains('show') && !e.target.closest('.skill-item') && !e.target.closest('.ability-save') && !e.target.closest('.initiative-roll')) {
+                hideDiceToast();
+            }
+        });
+
+        document.querySelectorAll('.skill-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const skill = this.dataset.skill;
+                const bonus = parseInt(this.dataset.bonus);
+                showDiceRoll(skill, bonus);
+            });
+        });
+
+        document.querySelectorAll('.ability-save').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const save = this.dataset.save;
+                const bonus = parseInt(this.dataset.bonus);
+                showDiceRoll(save + ' Save', bonus);
+            });
+        });
+
+        document.querySelector('.initiative-roll').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const bonus = parseInt(this.dataset.bonus);
+            showDiceRoll('Initiative', bonus);
+        });
+
+        // Rest functions
+        function shortRest() {
+            // Regain up to 3 Sorcery Points (half level rounded down)
+            const checkboxes = document.querySelectorAll('.sorcery-point');
+            let recovered = 0;
+            checkboxes.forEach(cb => {
+                if (cb.checked && recovered < 3) {
+                    cb.checked = false;
+                    recovered++;
+                }
+            });
+            saveState();
+            showRestToast('Short Rest', `Recovered ${recovered} Sorcery Points`);
+        }
+
+        function longRest() {
+            document.querySelectorAll('.slot-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Reset Innate Sorcery charges
+            document.getElementById('innateCharge1').classList.remove('used');
+            document.getElementById('innateCharge2').classList.remove('used');
+            
+            // Deactivate Innate Sorcery if active
+            deactivateInnateSorcery();
+            
+            saveState();
+            showRestToast('Long Rest', 'All slots & SP recovered');
+        }
+
+        // Sorcery Points functions
+        function getAvailableSorceryPoints() {
+            const checkboxes = document.querySelectorAll('.sorcery-point');
+            let available = 0;
+            checkboxes.forEach(cb => {
+                if (!cb.checked) available++;
+            });
+            return available;
+        }
+
+        function spendSorceryPoints(amount) {
+            const checkboxes = document.querySelectorAll('.sorcery-point');
+            let spent = 0;
+            checkboxes.forEach(cb => {
+                if (!cb.checked && spent < amount) {
+                    cb.checked = true;
+                    spent++;
+                }
+            });
+            return spent === amount;
+        }
+
+        // Metamagic functions
+        function useMetamagic(name, cost) {
+            const available = getAvailableSorceryPoints();
+            
+            if (available < cost) {
+                showErrorToast('Not Enough SP', `Need ${cost} SP, have ${available}`);
+                return;
+            }
+            
+            spendSorceryPoints(cost);
+            saveState();
+            showRestToast(name, `Spent ${cost} Sorcery Points`);
+        }
+
+        // Innate Sorcery functions
+        let innateSorceryActive = false;
+        const baseDC = 17;
+
+        function getAvailableInnateCharges() {
+            let available = 0;
+            if (!document.getElementById('innateCharge1').classList.contains('used')) available++;
+            if (!document.getElementById('innateCharge2').classList.contains('used')) available++;
+            return available;
+        }
+
+        function useInnateCharge() {
+            if (!document.getElementById('innateCharge1').classList.contains('used')) {
+                document.getElementById('innateCharge1').classList.add('used');
+                return true;
+            } else if (!document.getElementById('innateCharge2').classList.contains('used')) {
+                document.getElementById('innateCharge2').classList.add('used');
+                return true;
+            }
+            return false;
+        }
+
+        function toggleInnateCharge(num) {
+            const charge = document.getElementById('innateCharge' + num);
+            charge.classList.toggle('used');
+        }
+
+        function toggleInnateSorcery() {
+            if (innateSorceryActive) {
+                return; // Use the X button to deactivate
+            }
+            
+            const availableCharges = getAvailableInnateCharges();
+            const availableSP = getAvailableSorceryPoints();
+            
+            if (availableCharges > 0) {
+                // Use a charge
+                useInnateCharge();
+                activateInnateSorcery();
+                showRestToast('Innate Sorcery', 'Activated (used 1 charge)');
+            } else if (availableSP >= 2) {
+                // Use Sorcery Incarnate (2 SP)
+                spendSorceryPoints(2);
+                activateInnateSorcery();
+                showRestToast('Sorcery Incarnate', 'Activated (spent 2 SP)');
+            } else if (availableSP > 0) {
+                // Has some SP but not enough
+                showErrorToast('Not Enough SP', `Need 2 SP, have ${availableSP}`);
+            } else {
+                // No charges and no SP
+                showErrorToast('Cannot Activate', 'No charges and no SP');
+            }
+        }
+
+        function activateInnateSorcery() {
+            innateSorceryActive = true;
+            const btn = document.getElementById('innateActivateBtn');
+            btn.classList.add('active');
+            btn.childNodes[0].textContent = 'Active ';
+            
+            document.getElementById('innateStatus').textContent = 'Active (1 min) • Advantage on spell attacks';
+            document.getElementById('innateStatus').classList.add('active-status');
+            
+            document.getElementById('currentDC').innerHTML = '<span class="boosted">18</span>';
+            saveState();
+        }
+
+        function deactivateInnateSorcery() {
+            innateSorceryActive = false;
+            const btn = document.getElementById('innateActivateBtn');
+            btn.classList.remove('active');
+            btn.childNodes[0].textContent = 'Activate ';
+            
+            document.getElementById('innateStatus').textContent = 'Inactive';
+            document.getElementById('innateStatus').classList.remove('active-status');
+            
+            document.getElementById('currentDC').textContent = '17';
+            saveState();
+        }
+
+        function showRestToast(title, message) {
+            const toast = document.getElementById('diceToast');
+            const skillEl = document.getElementById('diceSkill');
+            const resultEl = document.getElementById('diceResult');
+            const breakdownEl = document.getElementById('diceBreakdown');
+            const labelEl = document.getElementById('diceLabel');
+
+            skillEl.textContent = title;
+            resultEl.textContent = '✓';
+            breakdownEl.textContent = message;
+            labelEl.textContent = '';
+
+            toast.classList.remove('crit', 'fail');
+            toast.classList.add('show');
+
+            if (diceToastTimeout) {
+                clearTimeout(diceToastTimeout);
+            }
+
+            diceToastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        function showErrorToast(title, message) {
+            const toast = document.getElementById('diceToast');
+            const skillEl = document.getElementById('diceSkill');
+            const resultEl = document.getElementById('diceResult');
+            const breakdownEl = document.getElementById('diceBreakdown');
+            const labelEl = document.getElementById('diceLabel');
+
+            skillEl.textContent = title;
+            resultEl.textContent = '✗';
+            breakdownEl.textContent = message;
+            labelEl.textContent = '';
+
+            toast.classList.remove('crit');
+            toast.classList.add('show', 'fail');
+
+            if (diceToastTimeout) {
+                clearTimeout(diceToastTimeout);
+            }
+
+            diceToastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
