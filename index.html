@@ -2207,7 +2207,7 @@
 
         document.addEventListener('click', function(e) {
             const toast = document.getElementById('diceToast');
-            if (toast.classList.contains('show') && !e.target.closest('.skill-item') && !e.target.closest('.ability-save') && !e.target.closest('.initiative-roll')) {
+            if (toast.classList.contains('show') && !e.target.closest('.skill-item') && !e.target.closest('.ability-save') && !e.target.closest('.initiative-roll') && !e.target.closest('.spell-stat')) {
                 hideDiceToast();
             }
         });
@@ -2240,12 +2240,12 @@
             const label = stat.querySelector('.spell-stat-label');
             if (label && label.textContent.includes('Attack')) {
                 stat.style.cursor = 'pointer';
-                stat.addEventListener('click', function() {
+                stat.addEventListener('click', function(e) {
                     const value = this.querySelector('.spell-stat-value').textContent;
                     const bonus = parseInt(value.replace('+', ''));
                     showDiceRoll('Spell Attack', bonus);
                 });
-                stat.addEventListener('mouseenter', function() { this.style.transform = 'translateY(-2px)'; this.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.2), 0 5px 12px rgba(0,0,0,0.3)'; });
+                stat.addEventListener('mouseenter', function() { this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)'; });
                 stat.addEventListener('mouseleave', function() { this.style.transform = ''; this.style.boxShadow = ''; });
             }
         });
