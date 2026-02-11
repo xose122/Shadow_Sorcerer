@@ -1203,6 +1203,192 @@
             }
         }
 
+        /* Defender/Companion Section Styles */
+        .defender-section {
+            margin-bottom: 25px;
+        }
+
+        .defender-box {
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.08) 0%, var(--parchment-dark) 100%);
+            border: 2px solid var(--shadow);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .defender-header {
+            background: linear-gradient(135deg, var(--shadow) 0%, var(--shadow-light) 100%);
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .defender-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+            letter-spacing: 0.05em;
+        }
+
+        .defender-subtitle {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+        }
+
+        .defender-content {
+            padding: 15px;
+        }
+
+        .defender-stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .defender-stat-box {
+            background: var(--parchment);
+            border: 1px solid var(--border-ornate);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .defender-stat-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--ink-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .defender-stat-value {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--shadow);
+        }
+
+        .defender-hp-tracker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .defender-hp-input {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--shadow);
+            width: 50px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            border-bottom: 2px solid var(--purple);
+        }
+
+        .defender-hp-input:focus {
+            outline: none;
+            border-bottom-color: var(--gold);
+        }
+
+        .defender-hp-max {
+            font-size: 0.9rem;
+            color: var(--ink-light);
+        }
+
+        .defender-abilities {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .defender-ability {
+            background: var(--parchment);
+            border: 1px solid var(--border-ornate);
+            border-radius: 4px;
+            padding: 6px 4px;
+            text-align: center;
+        }
+
+        .defender-ability-name {
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--ink-light);
+            text-transform: uppercase;
+        }
+
+        .defender-ability-score {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .defender-ability-mod {
+            font-size: 0.8rem;
+            color: var(--shadow);
+        }
+
+        .defender-traits {
+            margin-bottom: 12px;
+        }
+
+        .defender-trait {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .defender-trait-name {
+            font-weight: 600;
+            color: var(--shadow);
+        }
+
+        .defender-actions {
+            border-top: 1px dashed var(--purple);
+            padding-top: 12px;
+        }
+
+        .defender-action {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .defender-action-name {
+            font-weight: 600;
+            color: var(--purple);
+        }
+
+        .repair-charge {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--purple);
+            border-radius: 50%;
+            background: var(--parchment);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .repair-charge.used {
+            background: var(--purple);
+        }
+
+        .defender-repair-charges {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+        }
+
         @media print {
             body {
                 background: white;
@@ -1546,6 +1732,123 @@
             </div>
         </div>
 
+        <!-- Howl - Undead Spirit -->
+        <div class="defender-section">
+            <h2 class="section-title">Howl - Undead Spirit</h2>
+            <div class="defender-box">
+                <div class="defender-header">
+                    <div>
+                        <div class="defender-title">Howl</div>
+                        <div class="defender-subtitle">Medium Undead • Spectral Hound (Ghostly + Skeletal + Putrid)</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label style="font-size: 0.85rem; color: rgba(255,255,255,0.8);">Spell Level:</label>
+                        <select id="howlSpellLevel" onchange="updateHowlStats()" style="font-family: 'Cinzel', serif; padding: 5px 10px; border-radius: 4px; border: 2px solid var(--purple); background: var(--parchment); color: var(--ink); font-weight: 600; cursor: pointer;">
+                            <option value="3">3rd</option>
+                            <option value="4">4th</option>
+                            <option value="5">5th</option>
+                            <option value="6">6th</option>
+                            <option value="7">7th</option>
+                            <option value="8">8th</option>
+                            <option value="9">9th</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="defender-content">
+                    <div class="defender-stats-row">
+                        <div class="defender-stat-box">
+                            <div class="defender-stat-label">AC</div>
+                            <div class="defender-stat-value" id="howlAC">14</div>
+                        </div>
+                        <div class="defender-stat-box">
+                            <div class="defender-stat-label">HP</div>
+                            <div class="defender-hp-tracker">
+                                <input type="number" class="defender-hp-input" id="howlHP" value="30" min="0" max="30" onchange="saveState()">
+                                <span class="defender-hp-max" id="howlHPMax">/ 30</span>
+                            </div>
+                        </div>
+                        <div class="defender-stat-box">
+                            <div class="defender-stat-label">Speed</div>
+                            <div class="defender-stat-value">30 ft, fly 40 ft (hover)</div>
+                        </div>
+                        <div class="defender-stat-box">
+                            <div class="defender-stat-label">Duration</div>
+                            <div class="defender-stat-value">1 hour*</div>
+                        </div>
+                    </div>
+
+                    <div class="defender-abilities">
+                        <div class="defender-ability">
+                            <div class="defender-ability-name">STR</div>
+                            <div class="defender-ability-score">12</div>
+                            <div class="defender-ability-mod">+1</div>
+                        </div>
+                        <div class="defender-ability">
+                            <div class="defender-ability-name">DEX</div>
+                            <div class="defender-ability-score">16</div>
+                            <div class="defender-ability-mod">+3</div>
+                        </div>
+                        <div class="defender-ability">
+                            <div class="defender-ability-name">CON</div>
+                            <div class="defender-ability-score">15</div>
+                            <div class="defender-ability-mod">+2</div>
+                        </div>
+                        <div class="defender-ability">
+                            <div class="defender-ability-name">INT</div>
+                            <div class="defender-ability-score">4</div>
+                            <div class="defender-ability-mod">−3</div>
+                        </div>
+                        <div class="defender-ability">
+                            <div class="defender-ability-name">WIS</div>
+                            <div class="defender-ability-score">10</div>
+                            <div class="defender-ability-mod">+0</div>
+                        </div>
+                        <div class="defender-ability">
+                            <div class="defender-ability-name">CHA</div>
+                            <div class="defender-ability-score">9</div>
+                            <div class="defender-ability-mod">−1</div>
+                        </div>
+                    </div>
+
+                    <div class="defender-traits">
+                        <div class="defender-trait">
+                            <span class="defender-trait-name">Immunities:</span> Necrotic, Poison damage; Exhausted, Frightened, Paralyzed, Poisoned
+                        </div>
+                        <div class="defender-trait">
+                            <span class="defender-trait-name">Resistances:</span> Piercing and Slashing damage
+                        </div>
+                        <div class="defender-trait">
+                            <span class="defender-trait-name">Senses:</span> Darkvision 60 ft, Passive Perception 10
+                        </div>
+                        <div class="defender-trait">
+                            <span class="defender-trait-name">Duration:</span> Concentration up to 1 hour, or 1 minute without Concentration (Spirits of Ill Omen)
+                        </div>
+                    </div>
+
+                    <div class="defender-actions">
+                        <div class="defender-action">
+                            <span class="defender-action-name">Incorporeal Passage:</span> Can move through creatures and objects as if difficult terrain. Takes 1d10 Force damage if ends turn inside object.
+                        </div>
+                        <div class="defender-action">
+                            <span class="defender-action-name">Aura of Stench:</span> Creatures starting turn within 5 ft must succeed DC 17 CON save or be Poisoned until start of their next turn.
+                        </div>
+                        <div class="defender-action">
+                            <span class="defender-action-name">Multiattack:</span> Makes <span id="howlMultiattack">1</span> attack<span id="howlMultiattackPlural"></span>.
+                        </div>
+                        <div class="defender-action">
+                            <span class="defender-action-name">Deathly Touch:</span> Melee Attack. +9 to hit, reach 5 ft. Hit: <span id="howlDamageGhostly">1d8 + 6</span> Necrotic damage, and the target has the Frightened condition until the end of its next turn.
+                        </div>
+                        <div class="defender-action">
+                            <span class="defender-action-name">Grave Bolt:</span> Ranged Attack. +9 to hit, range 150 ft. Hit: <span id="howlDamageSkeletal">2d4 + 6</span> Necrotic damage.
+                        </div>
+                        <div class="defender-action">
+                            <span class="defender-action-name">Rotting Claw:</span> Melee Attack. +9 to hit, reach 5 ft. Hit: <span id="howlDamagePutrid">1d6 + 6</span> Slashing damage. If the target has the Poisoned condition, it has the Paralyzed condition until the end of its next turn.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Spellcasting -->
         <div class="spellcasting-section">
             <h2 class="section-title">Spellcasting</h2>
@@ -1709,7 +2012,9 @@
                     document.getElementById('innateCharge1').classList.contains('used'),
                     document.getElementById('innateCharge2').classList.contains('used')
                 ],
-                innateSorceryActive: innateSorceryActive
+                innateSorceryActive: innateSorceryActive,
+                howlHP: document.getElementById('howlHP') ? document.getElementById('howlHP').value : 30,
+                howlSpellLevel: document.getElementById('howlSpellLevel') ? document.getElementById('howlSpellLevel').value : 3
             };
 
             // Save spell slot checkboxes
@@ -1756,6 +2061,17 @@
                 if (state.innateSorceryActive) {
                     activateInnateSorcery();
                 }
+
+                // Restore Howl spell level
+                if (state.howlSpellLevel !== undefined && document.getElementById('howlSpellLevel')) {
+                    document.getElementById('howlSpellLevel').value = state.howlSpellLevel;
+                    updateHowlStats();
+                }
+
+                // Restore Howl HP
+                if (state.howlHP !== undefined && document.getElementById('howlHP')) {
+                    document.getElementById('howlHP').value = state.howlHP;
+                }
             } catch (e) {
                 console.error('Error loading saved state:', e);
             }
@@ -1777,6 +2093,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadState();
             setupAutoSave();
+            // Initialize Howl stats on page load
+            if (document.getElementById('howlSpellLevel')) {
+                updateHowlStats();
+            }
         });
 
         // Spell Database
@@ -2307,18 +2627,61 @@
             showRestToast('Short Rest', `Recovered ${recovered} Sorcery Points`);
         }
 
+        // Howl stats updater
+        function updateHowlStats() {
+            const level = parseInt(document.getElementById('howlSpellLevel').value);
+
+            // AC = 11 + spell level
+            const ac = 11 + level;
+            document.getElementById('howlAC').textContent = ac;
+
+            // HP = 30 + 10 * (level - 3)
+            const maxHP = 30 + (10 * (level - 3));
+            document.getElementById('howlHPMax').textContent = '/ ' + maxHP;
+            document.getElementById('howlHP').max = maxHP;
+
+            // Reset current HP to max when level changes
+            const currentHP = parseInt(document.getElementById('howlHP').value);
+            if (currentHP > maxHP) {
+                document.getElementById('howlHP').value = maxHP;
+            }
+
+            // Multiattack = floor(level / 2)
+            const multiattack = Math.floor(level / 2);
+            document.getElementById('howlMultiattack').textContent = multiattack;
+            document.getElementById('howlMultiattackPlural').textContent = multiattack > 1 ? 's' : '';
+
+            // Damage = 3 + level for all attacks
+            const damageBonus = 3 + level;
+            // Deathly Touch (Ghostly): 1d8 + 3 + level
+            document.getElementById('howlDamageGhostly').textContent = '1d8 + ' + damageBonus;
+            // Grave Bolt (Skeletal): 2d4 + 3 + level
+            document.getElementById('howlDamageSkeletal').textContent = '2d4 + ' + damageBonus;
+            // Rotting Claw (Putrid): 1d6 + 3 + level
+            document.getElementById('howlDamagePutrid').textContent = '1d6 + ' + damageBonus;
+
+            saveState();
+        }
+
         function longRest() {
             document.querySelectorAll('.slot-checkbox').forEach(checkbox => {
                 checkbox.checked = false;
             });
-            
+
             // Reset Innate Sorcery charges
             document.getElementById('innateCharge1').classList.remove('used');
             document.getElementById('innateCharge2').classList.remove('used');
-            
+
             // Deactivate Innate Sorcery if active
             deactivateInnateSorcery();
-            
+
+            // Reset Howl HP to max based on spell level
+            if (document.getElementById('howlHP') && document.getElementById('howlSpellLevel')) {
+                const level = parseInt(document.getElementById('howlSpellLevel').value);
+                const maxHP = 30 + (10 * (level - 3));
+                document.getElementById('howlHP').value = maxHP;
+            }
+
             saveState();
             showRestToast('Long Rest', 'All slots & SP recovered');
         }
