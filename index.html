@@ -1655,6 +1655,14 @@
                     <div class="feature-item"><span class="feature-name">Dual Personalities:</span> You have a persona identity. While in disguise, others can't discern your true identity</div>
                 </div>
             </div>
+
+            <div class="feature-category">
+                <div class="feature-category-header ruby">Origin Feat: Purple Dragon Rook</div>
+                <div class="feature-category-content">
+                    <div class="feature-item"><span class="feature-name">Entreat:</span> Proficiency in Insight, Performance, or Persuasion</div>
+                    <div class="feature-item"><span class="feature-name">Rallying Cry:</span> When you roll Initiative and don't have the Incapacitated condition, choose a number of creatures equal to your Proficiency Bonus that you can see within 30 feet. Those creatures gain Heroic Inspiration. (1/Long Rest)</div>
+                </div>
+            </div>
         </div>
 
         <!-- Innate Sorcery -->
@@ -1956,13 +1964,14 @@
             <div class="spell-level">
                 <div class="spell-level-header">3rd Level</div>
                 <div class="spell-level-content">
-                    <span class="spell-link" data-spell="hunger-of-hadar">Hunger of Hadar</span> <span class="spell-tag subclass">Shadow</span>, 
-                    <span class="spell-link" data-spell="summon-undead">Summon Undead</span> <span class="spell-tag subclass">Shadow</span>, 
-                    <span class="spell-link" data-spell="counterspell">Counterspell</span>, 
-                    <span class="spell-link" data-spell="dispel-magic">Dispel Magic</span>, 
-                    <span class="spell-link" data-spell="fireball">Fireball</span>, 
-                    <span class="spell-link" data-spell="fear">Fear</span>, 
-                    <span class="spell-link" data-spell="major-image">Major Image</span>
+                    <span class="spell-link" data-spell="hunger-of-hadar">Hunger of Hadar</span> <span class="spell-tag subclass">Shadow</span>,
+                    <span class="spell-link" data-spell="summon-undead">Summon Undead</span> <span class="spell-tag subclass">Shadow</span>,
+                    <span class="spell-link" data-spell="counterspell">Counterspell</span>,
+                    <span class="spell-link" data-spell="dispel-magic">Dispel Magic</span>,
+                    <span class="spell-link" data-spell="fireball">Fireball</span>,
+                    <span class="spell-link" data-spell="fear">Fear</span>,
+                    <span class="spell-link" data-spell="major-image">Major Image</span>,
+                    <span class="spell-link" data-spell="speak-with-dead">Speak with Dead</span>
                 </div>
             </div>
 
@@ -2387,6 +2396,17 @@
                 description: `<p>You create the image of an object, a creature, or some other visible phenomenon that is no larger than a 20-foot Cube. The image appears at a spot that you can see within range and lasts for the duration. It seems real, including sounds, smells, and temperature appropriate to the thing depicted, but it can't deal damage or cause conditions.</p><p>If you are within range of the illusion, you can take a Magic action to cause the image to move to any other spot within range. As the image changes location, you can alter its appearance so that its movements appear natural for the image. For example, if you create an image of a creature and move it, you can alter the image so that it appears to be walking. Similarly, you can cause the illusion to make different sounds at different times, even making it carry on a conversation, for example.</p><p>Physical interaction with the image reveals it to be an illusion, for things can pass through it. A creature that takes a Study action to examine the image can determine that it is an illusion with a successful Intelligence (Investigation) check against your spell save DC. If a creature discerns the illusion for what it is, the creature can see through the image, and its other sensory qualities become faint to the creature.</p>`,
                 upcast: "The spell lasts until dispelled, without requiring Concentration, if cast with a level 4+ spell slot."
             },
+            "speak-with-dead": {
+                name: "Speak with Dead",
+                level: "3rd",
+                school: "Necromancy",
+                type: "normal",
+                castingTime: "Action",
+                range: "10 feet",
+                components: "V, S, M (burning incense)",
+                duration: "10 minutes",
+                description: `<p>You grant the semblance of life to a corpse of your choice within range, allowing it to answer questions you pose. The corpse must have a mouth, and this spell fails if the deceased creature was Undead when it died. The spell also fails if the corpse was the target of this spell within the past 10 days.</p><p>Until the spell ends, you can ask the corpse up to five questions. The corpse knows only what it knew in life, including the languages it knew. Answers are usually brief, cryptic, or repetitive, and the corpse is under no compulsion to offer a truthful answer if you are antagonistic toward it or it recognizes you as an enemy. This spell doesn't return the creature's soul to its body, only its animating spirit. Thus, the corpse can't learn new information, doesn't comprehend anything that has happened since it died, and can't speculate about future events.</p>`
+            },
             // 4th Level
             "greater-invisibility": {
                 name: "Greater Invisibility",
@@ -2629,7 +2649,7 @@
 
         // Howl stats updater
         function updateHowlStats() {
-            const level = parseInt(document.getElementById('howlSpellLevel').value);
+            const level = parseInt(document.getElementById('howlSpellLevel').value) + 1; // Always upcast by 1
 
             // AC = 11 + spell level
             const ac = 11 + level;
